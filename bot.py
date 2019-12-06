@@ -19,8 +19,8 @@ import os
 import logging
 import random
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram import MessageEntity
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
+from telegram import MessageEntity, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 
 # Enable logging
@@ -42,7 +42,7 @@ salem_sticker_set = [
 
 def unlocked(chat_id):
     #TODO
-    return False
+    return True
 
 
 def unlock(chat_id):
@@ -153,6 +153,120 @@ def random_salem_sticker(update, context):
     )
 
 
+# Settings Conversation
+PARAMETER, VK_SUBS, VK_POST, FB_MSG = range(4)
+
+
+def settings(update, context):
+
+    if (not unlocked(update.message.chat.id)):
+        context.bot.send_message(
+            chat_id=update.message.chat.id,
+            text='Unfortunately, settings are available only for witches :('
+        )
+        return ConversationHandler.END
+
+
+    reply_keyboard = [['vk_subs', 'vk_post', 'fb_msg']]
+
+    context.bot.send_message(
+        chat_id=update.message.chat.id,
+        text='You can change the following parameters:\n'
+        'vk_subs - notify about VK community subscribers\n'
+        'vk_post - notify about new posts in VK community\n'
+        'fb_msg - notify about new PM in FB community\n'
+        '\n'
+        'Send /cancel to stop talking to me.\n\n'
+        'Which parameter do you want to change?',
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, 
+            resize_keyboard=True,
+            one_time_keyboard=True))
+
+    return PARAMETER
+
+
+def choose_param(update, context):
+    reply_keyboard = [['Enable', 'Disable']]
+
+    if (update.message.text == 'vk_subs'):
+        context.bot.send_message(
+            chat_id=update.message.chat.id,
+            text="'Enable' - notify when people subscribe/unsubscribe\n"
+            "'Disable' - stop notifications about subscriptions/unsubscriptions\n\n"
+            "Current status is: DISABLED",
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, 
+                resize_keyboard=True,
+                one_time_keyboard=True))
+        return VK_SUBS
+    elif (update.message.text == 'vk_post'):
+        context.bot.send_message(
+            chat_id=update.message.chat.id,
+            text="'Enable' - notify when new post was created in the community\n"
+            "'Disable' - stop notifications about subscriptions/unsubscriptions\n\n"
+            "Current status is: DISABLED",
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, 
+                resize_keyboard=True,
+                one_time_keyboard=True))
+        return VK_POST
+    elif (update.message.text == 'fb_msg'):
+        context.bot.send_message(
+            chat_id=update.message.chat.id,
+            text="'Enable' - notify when people subscribe/unsubscribe\n"
+            "'Disable' - stop notifications about subscriptions/unsubscriptions\n\n"
+            "Current status is: DISABLED",
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, 
+                resize_keyboard=True,
+                one_time_keyboard=True))
+        return FB_MSG
+
+    return None
+
+
+def set_value(param, val):
+    #TODO implement
+    pass
+
+
+def set_vk_subs(update, context):
+    set_value("vk_subs", update.message.text == 'Enabled')
+    logger.info("Settings for VK subscriptions were successfully updated")
+    update.message.reply_text('Success! Settings for VK subscriptions were updated',
+                              reply_markup=ReplyKeyboardRemove())
+    return ConversationHandler.END
+
+
+def set_vk_post(update, context):
+    set_value("vk_post", update.message.text == 'Enabled')
+    logger.info("Settings for VK post notifications were successfully updated")
+    update.message.reply_text('Success! Settings for VK post notifications were updated',
+                              reply_markup=ReplyKeyboardRemove())
+    return ConversationHandler.END
+
+
+def set_fb_msg(update, context):
+    set_value("fb_msg", update.message.text == 'Enabled')
+    logger.info("Settings for FB message notifications were successfully updated")
+    update.message.reply_text('Success! Settings for FB message notifications were updated',
+                              reply_markup=ReplyKeyboardRemove())
+    return ConversationHandler.END
+
+
+def cancel(update, context):
+    logger.info("Settings were cancelled")
+    update.message.reply_text('Cancelled.',
+                              reply_markup=ReplyKeyboardRemove())
+
+    return ConversationHandler.END
+
+
+def unknown_response(update, context):
+    context.bot.send_message(
+        chat_id=update.message.chat.id,
+        text='Unknown parameter, try again.'
+    )
+    return None
+
+
 def main():
     """Start the bot."""
 
@@ -168,9 +282,29 @@ def main():
     dp.add_handler(CommandHandler("alohomora", cmd_alohomora))
     dp.add_handler(CommandHandler("help", help))
 
-    dp.add_handler(MessageHandler((Filters.text | Filters.command), random_salem_sticker))
+    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('settings', settings)],
+
+        states={
+            PARAMETER: [MessageHandler(Filters.regex('^(vk_subs|vk_post|fb_msg)$'), choose_param)],
+
+            VK_SUBS: [MessageHandler(Filters.regex('^(Enable|Disable)$'), set_vk_subs)],
+            VK_POST: [MessageHandler(Filters.regex('^(Enable|Disable)$'), set_vk_post)],
+            FB_MSG:  [MessageHandler(Filters.regex('^(Enable|Disable)$'), set_fb_msg)]
+        },
+
+        fallbacks=[
+            CommandHandler('cancel', cancel),
+            MessageHandler((Filters.text | Filters.command), unknown_response)
+        ]
+    )
+
+    dp.add_handler(conv_handler)
+
     dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, start))
     dp.add_handler(MessageHandler(Filters.status_update.left_chat_member, stop))
+    dp.add_handler(MessageHandler((Filters.text | Filters.command), random_salem_sticker))
 
     # log all errors
     dp.add_error_handler(error)
