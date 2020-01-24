@@ -1,0 +1,85 @@
+version: '3.6'
+services:
+
+  notification-handler:
+    build: ./notification-handler
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.notification-handler.rule=Host(`webhook.aegeespb.com`) && (PathPrefix(`/vk`) || PathPrefix(`/fb`))"
+      - "traefik.http.routers.notification-handler.entrypoints=https"
+      - "traefik.http.routers.notification-handler.tls=true"
+      - "traefik.http.routers.notification-handler.tls.certresolver=le"
+    environment:
+      - MODULE_NAME=api
+    env_file:
+      - ./.env
+      #- "traefik.http.routers.flask.tls.options.default.minVersion=VersionTLS12"
+    #cipherSuites = [
+      #"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+    #]
+      #- "traefik.frontend.headers.forceSTSHeader=true"
+      #- "traefik.http.services.traefik.loadbalancer.server.port=80"
+    networks:
+      - frontend
+      - backend
+
+  tg-handler:
+    build: ./tg-handler
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tg-handler.rule=Host(`webhook.aegeespb.com`) && PathPrefix(`/tg`)"
+      - "traefik.http.routers.tg-handler.entrypoints=https"
+      - "traefik.http.routers.tg-handler.tls=true"
+      - "traefik.http.routers.tg-handler.tls.certresolver=le"
+    env_file:
+      - ./.env
+      #- "traefik.http.routers.flask.tls.options.default.minVersion=VersionTLS12"
+    #cipherSuites = [
+      #"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+    #]
+      #- "traefik.frontend.headers.forceSTSHeader=true"
+      #- "traefik.http.services.traefik.loadbalancer.server.port=80"
+    networks:
+      - frontend
+      - backend
+
+  worker: 
+    build: 
+      context: ./
+      dockerfile: Dockerfile-worker
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=false"
+    command: rq worker -u redis://redis:6379
+    networks:
+      - backend
+      - offline
+
+  redis:
+    image: redis
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=false"
+    command: redis-server --appendonly yes
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - offline
+
+        
+networks:
+  frontend:
+    external:
+      name: traefik_frontend
+  backend:
+    name: backend
+    driver: bridge
+  offline:
+    name: offline
+    driver: bridge
+    internal: true
+

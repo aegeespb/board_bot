@@ -1,26 +1,15 @@
 #!/bin/env python3
-'''
-in db:
-    {
-        "listener:<id>": { # different for board and non-board listeners
-            "unlocked": true,
-            "vk_subscribers": true,
-            "vk_new_post": true,
-            "fb_new_msg": true
-        },
-        "listener:<other_id>": { # different for board and non-board listeners
-            "unlocked": false,
-            "vk_new_post": true
-        },
-    }
-'''
 
 import os
 import logging
 import random
+from queue import Queue
+from threading import Thread
+import json
+import time
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
-from telegram import MessageEntity, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler, Dispatcher
+from telegram import MessageEntity, ReplyKeyboardMarkup, ReplyKeyboardRemove, Bot, Update
 
 
 # Enable logging
@@ -153,6 +142,55 @@ def random_salem_sticker(update, context):
     )
 
 
+FEATURES = json.loads('''[
+    {
+        "name": "",
+        "kboard_name": "VK Subscribers",
+        "description": "Toggle notifications about community members changes",
+        "avail_states": {
+            "1": {
+                "name": "Enable",
+                "desc": "send notifications to this chat."
+            },
+            "2": {
+                "name": "Disable",
+                "desc": "remove notifications from this chat."
+            }
+        }
+    },
+    {
+        "name": "",
+        "kboard_name": "VK New Posts",
+        "description": "Toggle notifications about new posts in the community",
+        "avail_states": {
+            "1": {
+                "name": "Enable",
+                "desc": "send notifications to this chat."
+            },
+            "2": {
+                "name": "Disable",
+                "desc": "remove notifications from this chat."
+            }
+        }
+    },
+    {
+        "name": "",
+        "kboard_name": "FB Private Messages",
+        "description": "Toggle notifications about new private messages in the FB community",
+        "avail_states": {
+            "1": {
+                "name": "Enable",
+                "desc": "send notifications to this chat."
+            },
+            "2": {
+                "name": "Disable",
+                "desc": "remove notifications from this chat."
+            }
+        }
+    }
+]''')
+
+
 # Settings Conversation
 PARAMETER, VK_SUBS, VK_POST, FB_MSG = range(4)
 
@@ -162,20 +200,17 @@ def settings(update, context):
     if (not unlocked(update.message.chat.id)):
         context.bot.send_message(
             chat_id=update.message.chat.id,
-            text='Unfortunately, settings are available only for witches :('
+            text='Unfortunately, settings are available only for the witches :('
         )
         return ConversationHandler.END
 
-
-    reply_keyboard = [['vk_subs', 'vk_post', 'fb_msg']]
+    reply_keyboard = [ [ft["kboard_name"]] for ft in FEATURES ]
+    description = "\n".join(ft["kboard_name"]+" - "+ft["desc"] for ft in FEATURES)
 
     context.bot.send_message(
         chat_id=update.message.chat.id,
-        text='You can change the following parameters:\n'
-        'vk_subs - notify about VK community subscribers\n'
-        'vk_post - notify about new posts in VK community\n'
-        'fb_msg - notify about new PM in FB community\n'
-        '\n'
+        text='You can change the following parameters:\n' + \
+        description + '\n\n'
         'Send /cancel to stop talking to me.\n\n'
         'Which parameter do you want to change?',
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, 
@@ -186,38 +221,19 @@ def settings(update, context):
 
 
 def choose_param(update, context):
-    reply_keyboard = [['Enable', 'Disable']]
 
-    if (update.message.text == 'vk_subs'):
-        context.bot.send_message(
-            chat_id=update.message.chat.id,
-            text="'Enable' - notify when people subscribe/unsubscribe\n"
-            "'Disable' - stop notifications about subscriptions/unsubscriptions\n\n"
-            "Current status is: DISABLED",
-            reply_markup=ReplyKeyboardMarkup(reply_keyboard, 
-                resize_keyboard=True,
-                one_time_keyboard=True))
-        return VK_SUBS
-    elif (update.message.text == 'vk_post'):
-        context.bot.send_message(
-            chat_id=update.message.chat.id,
-            text="'Enable' - notify when new post was created in the community\n"
-            "'Disable' - stop notifications about subscriptions/unsubscriptions\n\n"
-            "Current status is: DISABLED",
-            reply_markup=ReplyKeyboardMarkup(reply_keyboard, 
-                resize_keyboard=True,
-                one_time_keyboard=True))
-        return VK_POST
-    elif (update.message.text == 'fb_msg'):
-        context.bot.send_message(
-            chat_id=update.message.chat.id,
-            text="'Enable' - notify when people subscribe/unsubscribe\n"
-            "'Disable' - stop notifications about subscriptions/unsubscriptions\n\n"
-            "Current status is: DISABLED",
-            reply_markup=ReplyKeyboardMarkup(reply_keyboard, 
-                resize_keyboard=True,
-                one_time_keyboard=True))
-        return FB_MSG
+    for ft in FEATURES:
+        if (update.message.text == ft["kboard_name"]):
+            reply_keyboard = [ st["name"] for st in ft["avail_states"] ]
+            description = "\n".join(st["name"]+" - "+st["desc"] for st in ft["avail_states"])
+            context.bot.send_message(
+                chat_id=update.message.chat.id,
+                text= description + "\n\n"
+                "Current status is: DISABLED",
+                reply_markup=ReplyKeyboardMarkup(reply_keyboard, 
+                    resize_keyboard=True,
+                    one_time_keyboard=True))
+            return VK_SUBS
 
     return None
 
@@ -267,6 +283,22 @@ def unknown_response(update, context):
     return None
 
 
+def setup(token):
+    # Create bot, update queue and dispatcher instances
+    bot = Bot(token)
+    update_queue = Queue()
+
+    dp = Dispatcher(bot, update_queue, use_context=True)
+
+    ##### Register handlers here #####
+
+
+    # Start the thread
+    thread = Thread(target=dp.start, name='dispatcher')
+    #thread.start()
+
+    return (update_queue, dp, thread, bot) 
+
 def main():
     """Start the bot."""
 
@@ -275,11 +307,12 @@ def main():
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
+    #update_queue, dp, thread, bot = setup(BOT_TOKEN)
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", cmd_start))
     dp.add_handler(CommandHandler("stop", cmd_stop))
-    dp.add_handler(CommandHandler("alohomora", cmd_alohomora))
+    # dp.add_handler(CommandHandler("alohomora", cmd_alohomora))
     dp.add_handler(CommandHandler("help", help))
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
@@ -300,7 +333,7 @@ def main():
         ]
     )
 
-    dp.add_handler(conv_handler)
+    # dp.add_handler(conv_handler)
 
     dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, start))
     dp.add_handler(MessageHandler(Filters.status_update.left_chat_member, stop))
@@ -310,12 +343,29 @@ def main():
     dp.add_error_handler(error)
 
     # Start the Bot
-    updater.start_polling()
+    #updater.start_polling()
+    updater.start_webhook(listen='127.0.0.1', port=5000, url_path=BOT_TOKEN)
+    updater.bot.set_webhook(webhook_url='https://webhook.aegeespb.com/tg/'+BOT_TOKEN)
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
     # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
+
+"""
+    #thread.start()
+
+    text = '''
+    {"update_id": 703943140, "message": {"message_id": 202, "date": 1576063543, "chat": {"id": 266157674, "type": "private", "username": "subject108", "first_name": "Ivan", "last_name": "Fedotov"}, "text": "/start", "entities": [{"type": "bot_command", "offset": 0, "length": 6}], "caption_entities": [], "photo": [], "new_chat_members": [], "new_chat_photo": [], "delete_chat_photo": "False", "group_chat_created": "False", "supergroup_chat_created": "False", "channel_chat_created": "False", "from": {"id": 266157674, "first_name": "Ivan", "is_bot": "False", "last_name": "Fedotov", "username": "subject108", "language_code": "en"}}, "_effective_user": {"id": 266157674, "first_name": "Ivan", "is_bot": "False", "last_name": "Fedotov", "username": "subject108", "language_code": "en"}, "_effective_chat": {"id": 266157674, "type": "private", "username": "subject108", "first_name": "Ivan", "last_name": "Fedotov"}, "_effective_message": {"message_id": 202, "date": 1576063543, "chat": {"id": 266157674, "type": "private", "username": "subject108", "first_name": "Ivan", "last_name": "Fedotov"}, "text": "/start", "entities": [{"type": "bot_command", "offset": 0, "length": 6}], "caption_entities": [], "photo": [], "new_chat_members": [], "new_chat_photo": [], "delete_chat_photo": "False", "group_chat_created": "False", "supergroup_chat_created": "False", "channel_chat_created": "False", "from": {"id": 266157674, "first_name": "Ivan", "is_bot": "False", "last_name": "Fedotov", "username": "subject108", "language_code": "en"}}}
+    '''
+
+    update_queue.put(Update.de_json(json.loads(text), Bot(BOT_TOKEN)))
+
+    time.sleep(10)
+
+    thread.raise_exception()
+    thread.join()
+"""
 
 
 if __name__ == '__main__':

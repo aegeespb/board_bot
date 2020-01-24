@@ -1,0 +1,10 @@
+FROM python:3.7
+
+RUN pip install --upgrade pip && \ 
+    pip install --no-cache-dir rq python-telegram-bot requests
+
+WORKDIR /app
+
+COPY ./notification-handler/workers.py /app/
+
+CMD [ "rq", "worker" ]
