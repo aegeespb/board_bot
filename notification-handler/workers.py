@@ -11,15 +11,15 @@ def vk_get_user_info(user_id, token):
 def vk_get_info(msg, token):
     if (msg["type"] == "message_new"):
         first_name, last_name = vk_get_user_info(msg["object"]["message"]["from_id"], token)
-        return "*Новое сообщение VK*: {} {} написал сообщение в группу ВК: {}".format(first_name, last_name, msg["object"]["message"]["text"])
+        return "*Новое сообщение VK*\n{} {} написал\(а\):\n{}".format(first_name, last_name, msg["object"]["message"]["text"])
     elif (msg["type"] == "group_join"):
         first_name, last_name = vk_get_user_info(msg["object"]["user_id"], token)
-        return "*Этот прекрасный человек вступил в нашу группу*: {} {} http://vk.com/id{}".format(first_name, last_name, msg["object"]["user_id"])
+        return "*Новый участник группы VK*\n{} {}\nhttps://vk\.com/id{}".format(first_name, last_name, msg["object"]["user_id"])
     elif (msg["type"] == "group_leave"):
         first_name, last_name = vk_get_user_info(msg["object"]["user_id"], token)
-        return "*Этот уебок вышел из группы 😡*: {} {} http://vk.com/id{}".format(first_name, last_name, msg["object"]["user_id"])
+        return "*Покинул\(а\) группу VK*\n{} {}\nhttps://vk\.com/id{}".format(first_name, last_name, msg["object"]["user_id"])
     elif (msg["type"] == "wall_post_new"):
-        return "*Новый пост на стене*"
+        return "*Новый пост на стене VK*"
     else:
         return "Unknown notification"
 
@@ -34,5 +34,5 @@ def notify(tg_bot, src, msg, token, listeners):
         tg_bot.sendMessage(
             chat_id=chat_id,
             text=info,
-            parse_mode='Markdown'
+            parse_mode='MarkdownV2'
         )
