@@ -1,0 +1,30 @@
+plugins {
+    id 'application'
+}
+
+group 'org.jetbrains'
+version '1.0-beta'
+
+sourceCompatibility = 1.8
+mainClassName = "org.aegee.board.bot.EntryPoint"
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    extraLibs
+}
+
+dependencies {
+    compile 'org.telegram:telegrambots:4.4.0.1'
+    compile 'org.telegram:telegrambots-abilities:4.4.0.1'
+    compile group: 'com.google.inject', name: 'guice', version: '4.2.2'
+}
+
+
+jar {
+    manifest {
+        attributes "Main-Class": "$mainClassName"
+    }
+}

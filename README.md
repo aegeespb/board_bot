@@ -1,0 +1,1 @@
+# AEGEE SPb Board Bot
