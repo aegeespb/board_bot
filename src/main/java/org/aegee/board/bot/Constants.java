@@ -5,5 +5,8 @@ public class Constants {
   public static final String MY_EMAIL_REGEXP = "^(.+)@(.+)$";
   // Environment variables names
   static final String BOT_TOKEN_ENV_NAME = "BOARD_BOT_TOKEN";
-  static final String BOT_CREATOR_ID_ENV_NAME = "BOARD_BOT_CREATOR_ID";
+  static final String VK_GROUP_ID_ENV_NAME = "VK_GROUP_ID";
+  static final String VK_GROUP_TOKEN_ENV_NAME = "VK_GROUP_TOKEN";
+  static final String FIREBASE_DB_URL_ENV_NAME = "FIREBASE_DB_URL";
+  static final String FIREBASE_DB_SERVICE_ACCOUNT_KEY_CONTENT = "FIREBASE_DB_SERVICE_ACCOUNT_KEY_CONTENT";
 }

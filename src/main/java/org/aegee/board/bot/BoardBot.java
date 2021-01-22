@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.io.IOException;
+
 public class BoardBot extends TelegramLongPollingBot {
     private final Settings mySettings;
     private final SenderProxy mySenderProxy;
@@ -38,8 +40,12 @@ public class BoardBot extends TelegramLongPollingBot {
 
         String command = update.getMessage().getText();
         if (command.equals("/start")) {
-            mySenderProxy.sendMessage(update.getMessage().getChatId().toString(), "Hello World");
-            mySettings.addListener(update.getMessage().getChatId());
+            mySenderProxy.sendMessage(update.getMessage().getChatId().toString(), "Since the moment you will receive notifications about group events :yey:");
+            try {
+                mySettings.addListener(update.getMessage().getChatId());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

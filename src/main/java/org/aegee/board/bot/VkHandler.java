@@ -27,7 +27,7 @@ public class VkHandler {
         GroupActor groupActor = createGroupActor();
         HttpTransportClient httpClient = HttpTransportClient.getInstance();
         vkApiClient = new VkApiClient(httpClient);
-        vkApiClient.groups().setLongPollSettings(groupActor, 202051448).enabled(true)
+        vkApiClient.groups().setLongPollSettings(groupActor, groupActor.getGroupId()).enabled(true)
                 .groupJoin(true)
                 .groupLeave(true)
                 .execute();
@@ -50,7 +50,6 @@ public class VkHandler {
         @Override
         public void groupLeave(Integer groupId, GroupLeave message) {
             for (Long userId : mySettings.getAllListeners()) {
-//                mySenderProxy.sendMessage(userId.toString(), "groupLeave: " + message.toString());
                 notifyLeaveJoin(userId, message.getUserId(), false);
             }
         }
@@ -81,5 +80,23 @@ public class VkHandler {
     private static GroupActor createGroupActor() {
         String accessToken = "token";
         return new GroupActor(202051448, accessToken);
+    }
+
+    private static Integer getVkGroupId() {
+        final String vkGroupId = System.getenv(Constants.VK_GROUP_ID_ENV_NAME);
+        if (vkGroupId == null) {
+            throw new IllegalStateException("You should specify vk group id as environment variable " + Constants.VK_GROUP_ID_ENV_NAME);
+        }
+
+        return Integer.parseInt(vkGroupId);
+    }
+
+    private static String getVkAccessToken() {
+        final String vkGroupAccessToken = System.getenv(Constants.VK_GROUP_TOKEN_ENV_NAME);
+        if (vkGroupAccessToken == null) {
+            throw new IllegalStateException("You should specify vk group access token as environment variable " + Constants.VK_GROUP_TOKEN_ENV_NAME);
+        }
+
+        return vkGroupAccessToken;
     }
 }
