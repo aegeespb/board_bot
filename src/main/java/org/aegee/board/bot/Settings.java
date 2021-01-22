@@ -1,7 +1,6 @@
 package org.aegee.board.bot;
 
 import com.google.inject.Singleton;
-import org.telegram.abilitybots.api.db.DBContext;
 
 import java.util.Set;
 
@@ -31,9 +30,9 @@ public class Settings {
     }
     return Integer.parseInt(creatorId);
   }
-
-  void init(DBContext db) {
-    myDbStartedUserIds = db.getSet("user.ids");
-    myDbSubscribeEmails = db.getSet("subscribe.emails");
-  }
+//
+//  void init(DBContext db) {
+//    myDbStartedUserIds = db.getSet("user.ids");
+//    myDbSubscribeEmails = db.getSet("subscribe.emails");
+//  }
 }

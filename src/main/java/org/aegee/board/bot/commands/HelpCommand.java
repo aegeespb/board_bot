@@ -12,15 +12,15 @@ public class HelpCommand {
     mySender = sender;
   }
 
-  @SuppressWarnings("StringBufferReplaceableByString")
-  public void execute(Long chatId) {
-    StringBuilder helpMessageBuilder = new StringBuilder("*Available commands:* \n");
-    helpMessageBuilder.append("`/start` - \n");
-    helpMessageBuilder.append("`/score` - ");
-
-    mySender.execute(new SendMessage()
-                             .setText(helpMessageBuilder.toString())
-                             .enableMarkdown(true)
-                             .setChatId(chatId));
-  }
+//  @SuppressWarnings("StringBufferReplaceableByString")
+//  public void execute(Long chatId) {
+//    StringBuilder helpMessageBuilder = new StringBuilder("*Available commands:* \n");
+//    helpMessageBuilder.append("`/start` - \n");
+//    helpMessageBuilder.append("`/score` - ");
+//
+//    mySender.execute(new SendMessage()
+//                             .setText(helpMessageBuilder.toString())
+//                             .enableMarkdown(true)
+//                             .setChatId(chatId));
+//  }
 }

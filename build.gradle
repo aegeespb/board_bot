@@ -17,9 +17,10 @@ configurations {
 }
 
 dependencies {
-    compile 'org.telegram:telegrambots:4.4.0.1'
-    compile 'org.telegram:telegrambots-abilities:4.4.0.1'
+    compile "org.telegram:telegrambots:5.0.1"
     compile group: 'com.google.inject', name: 'guice', version: '4.2.2'
+    compile group: 'org.codehaus.mojo', name: 'appassembler-maven-plugin', version: '2.1.0'
+
 }
 
 

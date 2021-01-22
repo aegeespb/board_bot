@@ -14,12 +14,12 @@ public class WhoAmICommand {
     mySender = sender;
   }
 
-  public void execute(User user, Long chatId) {
-    mySender.execute(new SendMessage()
-                             .setText(user.getFirstName() + " " + user.getLastName() +
-                                              " (id=`" + user.getId() + "`; " +
-                                              "username=`" + user.getUserName() + "`)")
-                             .enableMarkdown(true)
-                             .setChatId(chatId));
-  }
+//  public void execute(User user, Long chatId) {
+//    mySender.execute(new SendMessage()
+//                             .setText(user.getFirstName() + " " + user.getLastName() +
+//                                              " (id=`" + user.getId() + "`; " +
+//                                              "username=`" + user.getUserName() + "`)")
+//                             .enableMarkdown(true)
+//                             .setChatId(chatId));
+//  }
 }

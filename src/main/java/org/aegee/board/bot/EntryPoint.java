@@ -3,16 +3,16 @@ package org.aegee.board.bot;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 public class EntryPoint {
   private static Injector myInjector;
-  private final BoardBotRouter myRouter;
+  private final BoardBot myRouter;
 
   @Inject
-  public EntryPoint(BoardBotRouter router) {
+  public EntryPoint(BoardBot router) {
     myRouter = router;
   }
 
@@ -28,9 +28,8 @@ public class EntryPoint {
 
   private void start() {
     try {
-      ApiContextInitializer.init();
-      new TelegramBotsApi().registerBot(myRouter);
-    } catch (TelegramApiRequestException e) {
+      new TelegramBotsApi(DefaultBotSession.class).registerBot(myRouter);
+    } catch (TelegramApiException e) {
       e.printStackTrace();
     }
   }
