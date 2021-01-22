@@ -12,7 +12,8 @@ public class EntryPoint {
   private final BoardBot myRouter;
 
   @Inject
-  public EntryPoint(BoardBot router) {
+  public EntryPoint(BoardBot router,
+                    VkHandler vkHandler) {
     myRouter = router;
   }
 

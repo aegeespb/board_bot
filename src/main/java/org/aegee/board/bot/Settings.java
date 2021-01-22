@@ -2,33 +2,20 @@ package org.aegee.board.bot;
 
 import com.google.inject.Singleton;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Singleton
 public class Settings {
-  private volatile Integer myCreatorId;
-  private Set<Long> myDbStartedUserIds;
+  private final Set<Long> myListeners = new HashSet<>();
   private Set<String> myDbSubscribeEmails;
 
-  public int getCreatorId() {
-    if (myCreatorId != null) {
-      return myCreatorId;
-    }
-
-    synchronized (this) {
-      if (myCreatorId == null) {
-        myCreatorId = getCreatorIdFromEnv();
-      }
-      return myCreatorId;
-    }
+  public void addListener(Long listener) {
+    myListeners.add(listener);
   }
 
-  private static int getCreatorIdFromEnv() {
-    final String creatorId = System.getenv(Constants.BOT_CREATOR_ID_ENV_NAME);
-    if (creatorId == null) {
-      throw new IllegalStateException("You should specify bot superuser as environment variable " + Constants.BOT_CREATOR_ID_ENV_NAME);
-    }
-    return Integer.parseInt(creatorId);
+  public Set<Long> getAllListeners() {
+    return myListeners;
   }
 //
 //  void init(DBContext db) {

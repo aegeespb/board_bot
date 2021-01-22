@@ -18,6 +18,7 @@ configurations {
 
 dependencies {
     compile "org.telegram:telegrambots:5.0.1"
+    compile 'com.vk.api:sdk:1.0.8'
     compile group: 'com.google.inject', name: 'guice', version: '4.2.2'
 }
 
