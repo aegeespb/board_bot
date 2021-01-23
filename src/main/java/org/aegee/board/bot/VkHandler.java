@@ -1,5 +1,6 @@
 package org.aegee.board.bot;
 
+import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.vk.api.sdk.callback.longpoll.CallbackApiLongPoll;
@@ -30,6 +31,8 @@ public class VkHandler {
         vkApiClient.groups().setLongPollSettings(groupActor, groupActor.getGroupId()).enabled(true)
                 .groupJoin(true)
                 .groupLeave(true)
+                .messageNew(true)
+                .apiVersion("5.126")
                 .execute();
 
         new Thread(() -> {
@@ -43,6 +46,23 @@ public class VkHandler {
     }
 
     public class CallbackApiLongPollHandler extends CallbackApiLongPoll {
+        private static final String CALLBACK_EVENT_CONFIRMATION = "confirmation";
+
+        @Override
+        public boolean parse(JsonObject json) {
+            String type = json.get("type").getAsString();
+            if (type.equalsIgnoreCase(CALLBACK_EVENT_CONFIRMATION)) {
+                super.parse(json);
+            }
+
+            if (type.equals("message_new")) {
+                String text = json.getAsJsonObject("object").getAsJsonObject("message").get("text").toString();
+                String fromId = json.getAsJsonObject("object").getAsJsonObject("message").get("from_id").toString();
+                notifyNewMessage(Integer.parseInt(fromId), text);
+            }
+            return super.parse(json);
+        }
+
         public CallbackApiLongPollHandler(VkApiClient client, GroupActor actor) {
             super(client, actor);
         }
@@ -62,6 +82,21 @@ public class VkHandler {
         }
     }
 
+    private void notifyNewMessage(Integer vkUserId, String message) {
+        try {
+            for (Long tgUserIdToNotify : mySettings.getAllListeners()) {
+                List<GetResponse> execute = vkApiClient.users().get(createGroupActor()).userIds(String.valueOf(vkUserId)).execute();
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(tgUserIdToNotify.toString());
+                sendMessage.enableMarkdown(true);
+                String msg = "Новое сообщение от [" + execute.get(0).getFirstName() + " " + execute.get(0).getLastName() + "](" + "https://vk.com/id" + vkUserId + ") : \"" + message + "\"";
+                sendMessage.setText(msg);
+                mySenderProxy.execute(sendMessage);
+            }
+        } catch (ApiException | ClientException e) {
+            e.printStackTrace();
+        }
+    }
     private void notifyLeaveJoin(Long tgUserIdToNotify, Integer vkUserId, boolean isJoin) {
         try {
             List<GetResponse> execute = vkApiClient.users().get(createGroupActor()).userIds(String.valueOf(vkUserId)).execute();
