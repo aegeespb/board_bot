@@ -112,7 +112,7 @@ public class VkHandler {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(tgUserIdToNotify.toString());
                 sendMessage.enableMarkdown(true);
-                String msg = "Новое сообщение от [" + execute.get(0).getFirstName() + " " + execute.get(0).getLastName() + "](" + "https://vk.com/id" + vkUserId + ") : \"" + message + "\"";
+                String msg = "New message from [" + execute.get(0).getFirstName() + " " + execute.get(0).getLastName() + "](" + "https://vk.com/id" + vkUserId + ") received: " + message;
                 sendMessage.setText(msg);
                 mySenderProxy.execute(sendMessage);
             }
@@ -127,7 +127,7 @@ public class VkHandler {
             sendMessage.setChatId(tgUserIdToNotify.toString());
             sendMessage.enableMarkdown(true);
             String msg = "[" + execute.get(0).getFirstName() + " " + execute.get(0).getLastName() + "](" + "https://vk.com/id" + vkUserId + ") "
-                    + (isJoin ? "присоединился" : "вышел");
+                    + (isJoin ? "has joined" : "has left");
             sendMessage.setText(msg);
             mySenderProxy.execute(sendMessage);
         } catch (ApiException | ClientException e) {
