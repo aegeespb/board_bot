@@ -78,8 +78,7 @@ public class VkHandler {
     }
 
     private static GroupActor createGroupActor() {
-        String accessToken = "token";
-        return new GroupActor(202051448, accessToken);
+        return new GroupActor(getVkGroupId(), getVkAccessToken());
     }
 
     private static Integer getVkGroupId() {
