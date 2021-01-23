@@ -7,6 +7,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class BoardBot extends TelegramLongPollingBot {
     private final Settings mySettings;
@@ -60,9 +62,7 @@ public class BoardBot extends TelegramLongPollingBot {
                 myWhoAmICommand.execute(update.getMessage().getFrom(), chatId);
                 break;
             case "/listUsers":
-                for (Long listener : mySettings.getAllListeners()) {
-
-                }
+                mySenderProxy.sendMessage(chatId.toString(), Arrays.toString(mySettings.getAllListeners().toArray()));
                 break;
             case "/help":
                 myHelpCommand.execute(chatId);
