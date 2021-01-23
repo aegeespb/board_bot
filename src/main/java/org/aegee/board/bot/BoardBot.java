@@ -1,6 +1,8 @@
 package org.aegee.board.bot;
 
 import com.google.inject.Inject;
+import org.aegee.board.bot.commands.HelpCommand;
+import org.aegee.board.bot.commands.WhoAmICommand;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -8,12 +10,18 @@ import java.io.IOException;
 
 public class BoardBot extends TelegramLongPollingBot {
     private final Settings mySettings;
+    private final WhoAmICommand myWhoAmICommand;
+    private final HelpCommand myHelpCommand;
     private final SenderProxy mySenderProxy;
 
     @Inject
     BoardBot(Settings settings,
-             SenderProxy senderProxy) {
+             SenderProxy senderProxy,
+             WhoAmICommand whoAmICommand,
+             HelpCommand helpCommand) {
         mySettings = settings;
+        myWhoAmICommand = whoAmICommand;
+        myHelpCommand = helpCommand;
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
         System.out.println("bot started");
@@ -37,15 +45,28 @@ public class BoardBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (shouldFilterOut(update)) return;
-
+        Long chatId = update.getMessage().getChatId();
         String command = update.getMessage().getText();
-        if (command.equals("/start")) {
-            mySenderProxy.sendMessage(update.getMessage().getChatId().toString(), "Since the moment you will receive notifications about group events :yey:");
-            try {
-                mySettings.addListener(update.getMessage().getChatId());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        switch (command) {
+            case "/start":
+                mySenderProxy.sendMessage(chatId.toString(), "Since the moment you will receive notifications about group events :yey:");
+                try {
+                    mySettings.addListener(chatId);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "/whoAmI":
+                myWhoAmICommand.execute(update.getMessage().getFrom(), chatId);
+                break;
+            case "/listUsers":
+                for (Long listener : mySettings.getAllListeners()) {
+
+                }
+                break;
+            case "/help":
+                myHelpCommand.execute(chatId);
+                break;
         }
     }
 
