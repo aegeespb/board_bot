@@ -12,6 +12,7 @@ import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.callback.GroupJoin;
 import com.vk.api.sdk.objects.callback.GroupLeave;
 import com.vk.api.sdk.objects.users.responses.GetResponse;
+import com.vk.api.sdk.objects.wall.Wallpost;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class VkHandler {
                 .groupJoin(true)
                 .groupLeave(true)
                 .messageNew(true)
+                .wallPostNew(true)
                 .apiVersion("5.126")
                 .execute();
 
@@ -79,6 +81,27 @@ public class VkHandler {
             for (Long userId : mySettings.getAllListeners()) {
                 notifyLeaveJoin(userId, message.getUserId(), true);
             }
+        }
+
+        @Override
+        public void wallPostNew(Integer groupId, Wallpost message) {
+            try {
+                Integer vkUserId = message.getFromId();
+                String link = "https://vk.com/club" + getVkGroupId() + "?w=wall-" + getVkGroupId() + "_" + message.getId();
+                List<GetResponse> execute = vkApiClient.users().get(createGroupActor()).userIds(String.valueOf(vkUserId)).execute();
+                String msg = "New [post](" + link + ") from [" + execute.get(0).getFirstName() + " " + execute.get(0).getLastName() + "](" + "https://vk.com/id" + vkUserId + ")";
+
+                for (Long tgUserIdToNotify : mySettings.getAllListeners()) {
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setChatId(tgUserIdToNotify.toString());
+                    sendMessage.enableMarkdown(true);
+                    sendMessage.setText(msg);
+                    mySenderProxy.execute(sendMessage);
+                }
+            } catch (ApiException | ClientException e) {
+                e.printStackTrace();
+            }
+            super.wallPostNew(groupId, message);
         }
     }
 
