@@ -17,5 +17,4 @@
  * restart: `heroku ps:scale worker=1`
  * deploy new commits: `git push heroku master`
  * see logs: `heroku logs`
-
-
+ * set environment variable: `heroku config:set %key%=%value%`
