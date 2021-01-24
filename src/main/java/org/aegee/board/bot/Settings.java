@@ -53,11 +53,6 @@ public class Settings {
        return firebaseDatabase.getReference(key);
     }
 
-    public void addListener(Long listener) throws IOException {
-        myListeners.add(listener);
-        update(VK_GROUP_LISTENERS_KEY, new ArrayList<>(myListeners));
-    }
-
     public void update(String key, Object value) {
         try {
             DatabaseReference ref = firebaseDatabase.getReference(key);

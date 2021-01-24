@@ -7,18 +7,20 @@ import org.telegram.telegrambots.meta.api.objects.User;
 public class StartCommand {
     private final SenderProxy mySenderProxy;
     private final UserHolder myUserHolder;
+    private AboutCommand myAboutCommand;
 
     @Inject
     public StartCommand(SenderProxy sender,
-                        UserHolder userHolder) {
+                        UserHolder userHolder,
+                        AboutCommand aboutCommand) {
         mySenderProxy = sender;
         myUserHolder = userHolder;
+        myAboutCommand = aboutCommand;
     }
 
     public void execute(Long chatId, User user) {
-
-        mySenderProxy.sendMessage(chatId.toString(), "Since the moment you will receive notifications about group events :yey:");
         createUpdateUser(chatId, user);
+        myAboutCommand.execute(chatId);
     }
 
     private void createUpdateUser(Long chatId, User user) {
