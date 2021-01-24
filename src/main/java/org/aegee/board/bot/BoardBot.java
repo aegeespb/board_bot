@@ -34,6 +34,9 @@ public class BoardBot extends TelegramLongPollingBot {
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
         System.out.println("bot started");
+//        for (Long listener : mySettings.getAllListeners()) {
+//            mySenderProxy.sendMessage(listener.toString(), "Bot was updated. Please enter /start one more time.");
+//        }
     }
 
     @Override
