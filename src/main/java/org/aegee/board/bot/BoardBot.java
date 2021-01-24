@@ -1,6 +1,7 @@
 package org.aegee.board.bot;
 
 import com.google.inject.Inject;
+import org.aegee.board.bot.commands.ChangeLanguageCommand;
 import org.aegee.board.bot.commands.HelpCommand;
 import org.aegee.board.bot.commands.StartCommand;
 import org.aegee.board.bot.commands.WhoAmICommand;
@@ -14,6 +15,7 @@ public class BoardBot extends TelegramLongPollingBot {
     private final WhoAmICommand myWhoAmICommand;
     private final HelpCommand myHelpCommand;
     private final StartCommand myStartCommand;
+    private final ChangeLanguageCommand myChangeLanguageCommand;
     private final SenderProxy mySenderProxy;
 
     @Inject
@@ -21,11 +23,13 @@ public class BoardBot extends TelegramLongPollingBot {
              SenderProxy senderProxy,
              WhoAmICommand whoAmICommand,
              HelpCommand helpCommand,
-             StartCommand startCommand) {
+             StartCommand startCommand,
+             ChangeLanguageCommand changeLanguageCommand) {
         mySettings = settings;
         myWhoAmICommand = whoAmICommand;
         myHelpCommand = helpCommand;
         myStartCommand = startCommand;
+        myChangeLanguageCommand = changeLanguageCommand;
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
         System.out.println("bot started");
@@ -48,6 +52,7 @@ public class BoardBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        if (isCallback(update)) myChangeLanguageCommand.handleCallback(update.getCallbackQuery());
         if (shouldFilterOut(update)) return;
         Long chatId = update.getMessage().getChatId();
         String command = update.getMessage().getText();
@@ -61,10 +66,17 @@ public class BoardBot extends TelegramLongPollingBot {
             case "/listUsers":
                 mySenderProxy.sendMessage(chatId.toString(), Arrays.toString(mySettings.getAllListeners().toArray()));
                 break;
+            case "/changeLanguage":
+                myChangeLanguageCommand.execute(chatId);
+                break;
             case "/help":
                 myHelpCommand.execute(chatId);
                 break;
         }
+    }
+
+    private boolean isCallback(Update update) {
+        return update.getCallbackQuery() != null;
     }
 
     private boolean shouldFilterOut(Update update) {

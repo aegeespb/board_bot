@@ -4,12 +4,11 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import org.telegram.telegrambots.meta.api.objects.User;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Singleton
 public class UserHolder {
@@ -39,6 +38,26 @@ public class UserHolder {
                         System.out.println("Ann error occurred " + databaseError.getMessage());
                     }
                 });
+    }
+
+    public void addUser(Long chatId, User user) {
+        addUser(chatId, user, user.getLanguageCode().equals("ru") ? Language.RUSSIAN : Language.ENGLISH);
+    }
+
+    public void addUser(Long chatId, User user, Language language) {
+        UserInfo userInfo = new UserInfo();
+        userInfo.setChatId(chatId);
+        userInfo.setLanguage(language);
+        userInfo.setPosition(AegeePosition.BOARD);
+        userInfo.setFirstName(user.getFirstName());
+        userInfo.setLastName(user.getLastName());
+
+        Set<Subscriptions> subscriptions = new HashSet<>();
+        subscriptions.add(Subscriptions.JOIN_LEAVE);
+        subscriptions.add(Subscriptions.NEW_POST);
+        userInfo.setSubscriptions(subscriptions);
+
+        addUser(userInfo);
     }
 
     public void addUser(UserInfo userInfo) {
