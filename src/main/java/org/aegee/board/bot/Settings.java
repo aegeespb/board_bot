@@ -19,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 public class Settings {
     private final FirebaseDatabase firebaseDatabase;
     private final String VK_GROUP_LISTENERS_KEY = "vk_group_listeners";
+    @Deprecated
     private final Set<Long> myListeners = new HashSet<>();
 
     public Settings() throws IOException {
@@ -71,6 +72,7 @@ public class Settings {
         }
     }
 
+    @Deprecated
     public Set<Long> getAllListeners() {
         return myListeners;
     }
