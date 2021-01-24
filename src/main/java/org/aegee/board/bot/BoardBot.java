@@ -2,28 +2,30 @@ package org.aegee.board.bot;
 
 import com.google.inject.Inject;
 import org.aegee.board.bot.commands.HelpCommand;
+import org.aegee.board.bot.commands.StartCommand;
 import org.aegee.board.bot.commands.WhoAmICommand;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class BoardBot extends TelegramLongPollingBot {
     private final Settings mySettings;
     private final WhoAmICommand myWhoAmICommand;
     private final HelpCommand myHelpCommand;
+    private final StartCommand myStartCommand;
     private final SenderProxy mySenderProxy;
 
     @Inject
     BoardBot(Settings settings,
              SenderProxy senderProxy,
              WhoAmICommand whoAmICommand,
-             HelpCommand helpCommand) {
+             HelpCommand helpCommand,
+             StartCommand startCommand) {
         mySettings = settings;
         myWhoAmICommand = whoAmICommand;
         myHelpCommand = helpCommand;
+        myStartCommand = startCommand;
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
         System.out.println("bot started");
@@ -51,12 +53,7 @@ public class BoardBot extends TelegramLongPollingBot {
         String command = update.getMessage().getText();
         switch (command) {
             case "/start":
-                mySenderProxy.sendMessage(chatId.toString(), "Since the moment you will receive notifications about group events :yey:");
-                try {
-                    mySettings.addListener(chatId);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                myStartCommand.execute(chatId, update.getMessage().getFrom());
                 break;
             case "/whoAmI":
                 myWhoAmICommand.execute(update.getMessage().getFrom(), chatId);
