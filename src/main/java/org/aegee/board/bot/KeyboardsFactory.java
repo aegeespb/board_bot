@@ -57,11 +57,16 @@ public class KeyboardsFactory {
         eventInAegee.setText("Какие мероприятия проводятся в AEGEE?");
         eventInAegee.setCallbackData(AboutChapters.EVENTS_IN_AEGEE.toString());
 
+        InlineKeyboardButton aboutSummerUniversity = new InlineKeyboardButton();
+        aboutSummerUniversity.setText("Что такое Summer University?");
+        aboutSummerUniversity.setCallbackData(AboutChapters.ABOUT_SUMMER_UNIVERSITY.toString());
+
         rowsInline.add(Collections.singletonList(whatToDoButton));
         rowsInline.add(Collections.singletonList(whereIsAegee));
         rowsInline.add(Collections.singletonList(managementInAegee));
         rowsInline.add(Collections.singletonList(howToJoin));
         rowsInline.add(Collections.singletonList(eventInAegee));
+        rowsInline.add(Collections.singletonList(aboutSummerUniversity));
         inlineKeyboard.setKeyboard(rowsInline);
         return inlineKeyboard;
     }
@@ -74,6 +79,29 @@ public class KeyboardsFactory {
         backToAbout.setText("<< Вернуться к оглавлению");
         backToAbout.setCallbackData(BACK_TO_ABOUT_CALLBACK);
 
+        rowsInline.add(Collections.singletonList(backToAbout));
+        inlineKeyboard.setKeyboard(rowsInline);
+        return inlineKeyboard;
+    }
+
+    public static ReplyKeyboard getTypesCostAndBack() {
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        InlineKeyboardButton typesSummerUniversity = new InlineKeyboardButton();
+        typesSummerUniversity.setText("Какие бывают типы SU?");
+        typesSummerUniversity.setCallbackData(AboutChapters.TYPES_SUMMER_UNIVERSITY.toString());
+
+        InlineKeyboardButton costSummerUniversity = new InlineKeyboardButton();
+        costSummerUniversity.setText("Сколько это стоит?");
+        costSummerUniversity.setCallbackData(AboutChapters.COST_SUMMER_UNIVERSITY.toString());
+
+        InlineKeyboardButton backToAbout = new InlineKeyboardButton();
+        backToAbout.setText("<< Вернуться к оглавлению");
+        backToAbout.setCallbackData(BACK_TO_ABOUT_CALLBACK);
+
+        rowsInline.add(Collections.singletonList(typesSummerUniversity));
+        rowsInline.add(Collections.singletonList(costSummerUniversity));
         rowsInline.add(Collections.singletonList(backToAbout));
         inlineKeyboard.setKeyboard(rowsInline);
         return inlineKeyboard;
