@@ -69,6 +69,17 @@ public class UserHolder {
         myUserInfoMap.get(chatId.toString());
     }
 
+    public Collection<Long> getBoardMembersIds() {
+        List<Long> boardMemberIds = new ArrayList<>();
+        for (Map.Entry<String, UserInfo> chatId2UserInfo : myUserInfoMap.entrySet()) {
+            UserInfo userInfo = chatId2UserInfo.getValue();
+            if (userInfo.getPosition() == AegeePosition.BOARD) {
+                boardMemberIds.add(Long.parseLong(chatId2UserInfo.getKey()));
+            }
+        }
+        return boardMemberIds;
+    }
+
     public Collection<UserInfo> getAllUsers() {
         return myUserInfoMap.values();
     }
