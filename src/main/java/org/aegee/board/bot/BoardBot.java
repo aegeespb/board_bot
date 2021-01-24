@@ -1,11 +1,9 @@
 package org.aegee.board.bot;
 
 import com.google.inject.Inject;
-import org.aegee.board.bot.commands.ChangeLanguageCommand;
-import org.aegee.board.bot.commands.HelpCommand;
-import org.aegee.board.bot.commands.StartCommand;
-import org.aegee.board.bot.commands.WhoAmICommand;
+import org.aegee.board.bot.commands.*;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Arrays;
@@ -16,6 +14,7 @@ public class BoardBot extends TelegramLongPollingBot {
     private final HelpCommand myHelpCommand;
     private final StartCommand myStartCommand;
     private final ChangeLanguageCommand myChangeLanguageCommand;
+    private final AboutCommand myAboutCommand;
     private final SenderProxy mySenderProxy;
 
     @Inject
@@ -24,12 +23,14 @@ public class BoardBot extends TelegramLongPollingBot {
              WhoAmICommand whoAmICommand,
              HelpCommand helpCommand,
              StartCommand startCommand,
-             ChangeLanguageCommand changeLanguageCommand) {
+             ChangeLanguageCommand changeLanguageCommand,
+             AboutCommand aboutCommand) {
         mySettings = settings;
         myWhoAmICommand = whoAmICommand;
         myHelpCommand = helpCommand;
         myStartCommand = startCommand;
         myChangeLanguageCommand = changeLanguageCommand;
+        myAboutCommand = aboutCommand;
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
         System.out.println("bot started");
@@ -52,7 +53,7 @@ public class BoardBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (isCallback(update)) myChangeLanguageCommand.handleCallback(update.getCallbackQuery());
+        if (isCallback(update)) handleCallback(update.getCallbackQuery());
         if (shouldFilterOut(update)) return;
         Long chatId = update.getMessage().getChatId();
         String command = update.getMessage().getText();
@@ -72,6 +73,20 @@ public class BoardBot extends TelegramLongPollingBot {
             case "/help":
                 myHelpCommand.execute(chatId);
                 break;
+            case "/about":
+                myAboutCommand.execute(chatId);
+                break;
+        }
+    }
+
+    private void handleCallback(CallbackQuery callbackQuery) {
+        if (Constants.BACK_TO_ABOUT_CALLBACK.equals(callbackQuery.getData())) {
+            myAboutCommand.execute(callbackQuery.getMessage().getChatId());
+        } else if (Language.ENGLISH.toString().equals(callbackQuery.getData()) ||
+                Language.RUSSIAN.toString().equals(callbackQuery.getData())) {
+            myChangeLanguageCommand.handleCallback(callbackQuery);
+        } else {
+            myAboutCommand.handleCallback(callbackQuery);
         }
     }
 

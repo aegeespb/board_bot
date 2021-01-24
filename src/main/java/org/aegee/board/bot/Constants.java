@@ -9,4 +9,8 @@ public class Constants {
   static final String VK_GROUP_TOKEN_ENV_NAME = "VK_GROUP_TOKEN";
   static final String FIREBASE_DB_URL_ENV_NAME = "FIREBASE_DB_URL";
   static final String FIREBASE_DB_SERVICE_ACCOUNT_KEY_CONTENT = "FIREBASE_DB_SERVICE_ACCOUNT_KEY_CONTENT";
+
+  // Texts
+  public static final String PREFERABLE_LANGUAGE = "Preferable Language";
+  public static final String BACK_TO_ABOUT_CALLBACK = "back_to_about";
 }

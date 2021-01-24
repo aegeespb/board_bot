@@ -1,10 +1,7 @@
 package org.aegee.board.bot.commands;
 
 import com.google.inject.Inject;
-import org.aegee.board.bot.KeyboardsFactory;
-import org.aegee.board.bot.Language;
-import org.aegee.board.bot.SenderProxy;
-import org.aegee.board.bot.UserHolder;
+import org.aegee.board.bot.*;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -23,7 +20,7 @@ public class ChangeLanguageCommand {
     public void execute(Long chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId.toString());
-        sendMessage.setText("Preferable Language");
+        sendMessage.setText(Constants.PREFERABLE_LANGUAGE);
         sendMessage.setReplyMarkup(KeyboardsFactory.getLanguageKeyboard());
         mySenderProxy.execute(sendMessage);
     }
