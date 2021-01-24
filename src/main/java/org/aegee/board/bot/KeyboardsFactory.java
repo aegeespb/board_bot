@@ -84,7 +84,25 @@ public class KeyboardsFactory {
         return inlineKeyboard;
     }
 
-    public static ReplyKeyboard getTypesCostAndBack() {
+    public static ReplyKeyboard getEuropeanManagementAndBack() {
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+
+        InlineKeyboardButton europeanLevel = new InlineKeyboardButton();
+        europeanLevel.setText("Европейский уровень");
+        europeanLevel.setCallbackData(AboutChapters.EUROPEAN_MANAGEMENT_LEVEL.toString());
+
+        InlineKeyboardButton backToAbout = new InlineKeyboardButton();
+        backToAbout.setText("<< Вернуться к оглавлению");
+        backToAbout.setCallbackData(BACK_TO_ABOUT_CALLBACK);
+
+        rowsInline.add(Collections.singletonList(europeanLevel));
+        rowsInline.add(Collections.singletonList(backToAbout));
+        inlineKeyboard.setKeyboard(rowsInline);
+        return inlineKeyboard;
+    }
+
+    public static ReplyKeyboard getTypesCostSUAndBack() {
         InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
