@@ -9,7 +9,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.util.Arrays;
 
 public class BoardBot extends TelegramLongPollingBot {
-    private final Settings mySettings;
     private final WhoAmICommand myWhoAmICommand;
     private final HelpCommand myHelpCommand;
     private final StartCommand myStartCommand;
@@ -19,15 +18,13 @@ public class BoardBot extends TelegramLongPollingBot {
     private final SenderProxy mySenderProxy;
 
     @Inject
-    BoardBot(Settings settings,
-             SenderProxy senderProxy,
+    BoardBot(SenderProxy senderProxy,
              WhoAmICommand whoAmICommand,
              HelpCommand helpCommand,
              StartCommand startCommand,
              ChangeLanguageCommand changeLanguageCommand,
              AboutCommand aboutCommand,
              UserHolder userHolder) {
-        mySettings = settings;
         myWhoAmICommand = whoAmICommand;
         myHelpCommand = helpCommand;
         myStartCommand = startCommand;
@@ -36,18 +33,6 @@ public class BoardBot extends TelegramLongPollingBot {
         myUserHolder = userHolder;
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
-        while (mySettings.getAllListeners().size() == 0) {
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        for (Long listener : mySettings.getAllListeners()) {
-            if (myUserHolder.getUser(listener) == null) {
-                mySenderProxy.sendMessage(listener.toString(), "Bot was updated. Please enter /start to start bot for you.");
-            }
-        }
         System.out.println("bot started");
     }
 
@@ -80,7 +65,6 @@ public class BoardBot extends TelegramLongPollingBot {
                 myWhoAmICommand.execute(update.getMessage().getFrom(), chatId);
                 break;
             case "/listUsers":
-                mySenderProxy.sendMessage(chatId.toString(), "Old: " + Arrays.toString(mySettings.getAllListeners().toArray()));
                 mySenderProxy.sendMessage(chatId.toString(), "New: " + Arrays.toString(myUserHolder.getAllUsers().toArray(new UserInfo[0])));
                 break;
             case "/changeLanguage":

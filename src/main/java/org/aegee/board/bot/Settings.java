@@ -10,17 +10,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 @Singleton
 public class Settings {
     private final FirebaseDatabase firebaseDatabase;
-    private final String VK_GROUP_LISTENERS_KEY = "vk_group_listeners";
-    @Deprecated
-    private final Set<Long> myListeners = new HashSet<>();
 
     public Settings() throws IOException {
         String dbUrl = getFirebaseDbUrl();
@@ -32,22 +26,7 @@ public class Settings {
                 .build();
 
         FirebaseApp.initializeApp(options);
-
         firebaseDatabase = FirebaseDatabase.getInstance(dbUrl);
-        DatabaseReference vkGroupListenersRef = firebaseDatabase.getReference(VK_GROUP_LISTENERS_KEY);
-        vkGroupListenersRef.addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        ArrayList<Long> ids = (ArrayList<Long>) dataSnapshot.getValue();
-                        myListeners.addAll(ids);
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        System.out.println("Ann error occurred " + databaseError.getMessage());
-                    }
-                });
     }
 
     public DatabaseReference getDatabaseReference(String key) {
@@ -70,11 +49,6 @@ public class Settings {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    @Deprecated
-    public Set<Long> getAllListeners() {
-        return myListeners;
     }
 
     private static String getFirebaseDbUrl() {

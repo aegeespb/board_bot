@@ -20,15 +20,12 @@ import java.util.List;
 @Singleton
 public class VkHandler {
     private final SenderProxy mySenderProxy;
-    private final Settings mySettings;
     private final UserHolder myUserHolder;
     private final VkApiClient vkApiClient;
     @Inject
     public VkHandler(SenderProxy senderProxy,
-                     Settings settings,
                      UserHolder userHolder) throws ClientException, ApiException {
         mySenderProxy = senderProxy;
-        mySettings = settings;
         myUserHolder = userHolder;
         GroupActor groupActor = createGroupActor();
         HttpTransportClient httpClient = HttpTransportClient.getInstance();

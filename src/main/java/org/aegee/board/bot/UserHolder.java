@@ -48,7 +48,7 @@ public class UserHolder {
         UserInfo userInfo = new UserInfo();
         userInfo.setChatId(chatId);
         userInfo.setLanguage(language);
-        userInfo.setPosition(AegeePosition.BOARD);
+        userInfo.setPosition(AegeePosition.CURIOUS);
         userInfo.setFirstName(user.getFirstName());
         userInfo.setLastName(user.getLastName());
 
