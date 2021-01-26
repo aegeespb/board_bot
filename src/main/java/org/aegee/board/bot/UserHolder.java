@@ -65,8 +65,8 @@ public class UserHolder {
         mySettings.update("user_holder", myUserInfoMap);
     }
 
-    public void getUser(Long chatId) {
-        myUserInfoMap.get(chatId.toString());
+    public UserInfo getUser(Long chatId) {
+        return myUserInfoMap.get(chatId.toString());
     }
 
     public Collection<Long> getBoardMembersIds() {

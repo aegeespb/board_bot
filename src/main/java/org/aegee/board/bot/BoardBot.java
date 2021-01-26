@@ -15,6 +15,7 @@ public class BoardBot extends TelegramLongPollingBot {
     private final StartCommand myStartCommand;
     private final ChangeLanguageCommand myChangeLanguageCommand;
     private final AboutCommand myAboutCommand;
+    private final UserHolder myUserHolder;
     private final SenderProxy mySenderProxy;
 
     @Inject
@@ -24,19 +25,30 @@ public class BoardBot extends TelegramLongPollingBot {
              HelpCommand helpCommand,
              StartCommand startCommand,
              ChangeLanguageCommand changeLanguageCommand,
-             AboutCommand aboutCommand) {
+             AboutCommand aboutCommand,
+             UserHolder userHolder) {
         mySettings = settings;
         myWhoAmICommand = whoAmICommand;
         myHelpCommand = helpCommand;
         myStartCommand = startCommand;
         myChangeLanguageCommand = changeLanguageCommand;
         myAboutCommand = aboutCommand;
+        myUserHolder = userHolder;
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
+        while (mySettings.getAllListeners().size() == 0) {
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        for (Long listener : mySettings.getAllListeners()) {
+            if (myUserHolder.getUser(listener) == null) {
+                mySenderProxy.sendMessage(listener.toString(), "Bot was updated. Please enter /start to start bot for you.");
+            }
+        }
         System.out.println("bot started");
-//        for (Long listener : mySettings.getAllListeners()) {
-//            mySenderProxy.sendMessage(listener.toString(), "Bot was updated. Please enter /start one more time.");
-//        }
     }
 
     @Override
@@ -68,7 +80,8 @@ public class BoardBot extends TelegramLongPollingBot {
                 myWhoAmICommand.execute(update.getMessage().getFrom(), chatId);
                 break;
             case "/listUsers":
-                mySenderProxy.sendMessage(chatId.toString(), Arrays.toString(mySettings.getAllListeners().toArray()));
+                mySenderProxy.sendMessage(chatId.toString(), "Old: " + Arrays.toString(mySettings.getAllListeners().toArray()));
+                mySenderProxy.sendMessage(chatId.toString(), "New: " + Arrays.toString(myUserHolder.getAllUsers().toArray(new UserInfo[0])));
                 break;
             case "/changeLanguage":
                 myChangeLanguageCommand.execute(chatId);
@@ -78,6 +91,9 @@ public class BoardBot extends TelegramLongPollingBot {
                 break;
             case "/about":
                 myAboutCommand.execute(chatId);
+                break;
+            case "/version":
+                mySenderProxy.sendMessage(chatId.toString(), "0.0.2");
                 break;
         }
     }

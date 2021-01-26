@@ -5,15 +5,12 @@ import org.aegee.board.bot.*;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 public class StartCommand {
-    private final SenderProxy mySenderProxy;
     private final UserHolder myUserHolder;
     private AboutCommand myAboutCommand;
 
     @Inject
-    public StartCommand(SenderProxy sender,
-                        UserHolder userHolder,
+    public StartCommand(UserHolder userHolder,
                         AboutCommand aboutCommand) {
-        mySenderProxy = sender;
         myUserHolder = userHolder;
         myAboutCommand = aboutCommand;
     }
@@ -24,6 +21,8 @@ public class StartCommand {
     }
 
     private void createUpdateUser(Long chatId, User user) {
-        myUserHolder.addUser(chatId, user);
+        if (myUserHolder.getUser(chatId) == null) {
+            myUserHolder.addUser(chatId, user);
+        }
     }
 }

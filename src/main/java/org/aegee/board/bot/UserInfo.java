@@ -73,5 +73,12 @@ public class UserInfo {
     public void setSubscriptions(Collection<Subscriptions> subscriptions) {
         this.subscriptions = subscriptions;
     }
+
+    @Override
+    public String toString() {
+        return "UserInfo [" +
+                firstName + " " + lastName + " :: " + chatId + " :: position: " + position +
+                " :: " + " language: " + language + "]";
+    }
 }
 
