@@ -41,6 +41,7 @@ public class EventsCommand {
         sendMessage.setChatId(chatId.toString());
         StringBuilder sb = new StringBuilder();
         for (Event event : events.values()) {
+            if (event.getStartDate().before(Calendar.getInstance().getTime())) continue;
             sb.append(df.format(event.getStartDate()));
             sb.append(" - ");
             if (event.getFinishDate() != null) {
