@@ -72,15 +72,15 @@ public class VkHandler {
 
         @Override
         public void groupLeave(Integer groupId, GroupLeave message) {
-            for (Long userId : myUserHolder.getBoardMembersIds()) {
-                notifyLeaveJoin(userId, message.getUserId(), false);
+            for (UserInfo user : myUserHolder.getBoardMembers()) {
+                notifyLeaveJoin(user.getChatId(), message.getUserId(), false);
             }
         }
 
         @Override
         public void groupJoin(Integer groupId, GroupJoin message) {
-            for (Long userId : myUserHolder.getBoardMembersIds()) {
-                notifyLeaveJoin(userId, message.getUserId(), true);
+            for (UserInfo user : myUserHolder.getBoardMembers()) {
+                notifyLeaveJoin(user.getChatId(), message.getUserId(), true);
             }
         }
 
@@ -92,9 +92,9 @@ public class VkHandler {
                 List<GetResponse> execute = vkApiClient.users().get(createGroupActor()).userIds(String.valueOf(vkUserId)).execute();
                 String msg = "New [post](" + link + ") from [" + execute.get(0).getFirstName() + " " + execute.get(0).getLastName() + "](" + "https://vk.com/id" + vkUserId + ")";
 
-                for (Long tgUserIdToNotify : myUserHolder.getBoardMembersIds()) {
+                for (UserInfo tgUserToNotify : myUserHolder.getBoardMembers()) {
                     SendMessage sendMessage = new SendMessage();
-                    sendMessage.setChatId(tgUserIdToNotify.toString());
+                    sendMessage.setChatId(tgUserToNotify.getChatId().toString());
                     sendMessage.enableMarkdown(true);
                     sendMessage.setText(msg);
                     mySenderProxy.execute(sendMessage);
@@ -108,10 +108,10 @@ public class VkHandler {
 
     private void notifyNewMessage(Integer vkUserId, String message) {
         try {
-            for (Long tgUserIdToNotify : myUserHolder.getBoardMembersIds()) {
+            for (UserInfo tgUserToNotify : myUserHolder.getBoardMembers()) {
                 List<GetResponse> execute = vkApiClient.users().get(createGroupActor()).userIds(String.valueOf(vkUserId)).execute();
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(tgUserIdToNotify.toString());
+                sendMessage.setChatId(tgUserToNotify.getChatId().toString());
                 sendMessage.enableMarkdown(true);
                 String msg = "New message from [" + execute.get(0).getFirstName() + " " + execute.get(0).getLastName() + "](" + "https://vk.com/id" + vkUserId + ") received: " + message;
                 sendMessage.setText(msg);

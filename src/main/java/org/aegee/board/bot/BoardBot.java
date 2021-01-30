@@ -5,6 +5,7 @@ import org.aegee.board.bot.commands.*;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.util.Arrays;
 
@@ -37,6 +38,10 @@ public class BoardBot extends TelegramLongPollingBot {
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
         System.out.println("bot started");
+
+//        for (UserInfo boardMembersId : myUserHolder.getBoardMembers()) {
+//            myStartCommand.execute(boardMembersId.getChatId());
+//        }
     }
 
     @Override
@@ -80,8 +85,11 @@ public class BoardBot extends TelegramLongPollingBot {
         }
         switch (command) {
             case "/start":
+                createUpdateUser(chatId, update.getMessage().getFrom());
+                myStartCommand.execute(chatId);
+                break;
             case "/menu":
-                myStartCommand.execute(chatId, update.getMessage().getFrom());
+                myStartCommand.execute(chatId);
                 break;
             case "/whoAmI":
                 myWhoAmICommand.execute(update.getMessage().getFrom(), chatId);
@@ -104,6 +112,12 @@ public class BoardBot extends TelegramLongPollingBot {
             case "/events":
                 myEventsCommand.execute(chatId);
                 break;
+        }
+    }
+
+    private void createUpdateUser(Long chatId, User user) {
+        if (myUserHolder.getUser(chatId) == null) {
+            myUserHolder.addUser(chatId, user);
         }
     }
 
