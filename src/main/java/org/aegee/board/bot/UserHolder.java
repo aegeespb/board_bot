@@ -14,6 +14,7 @@ import java.util.*;
 public class UserHolder {
 
     private final Settings mySettings;
+    public volatile boolean isReady = false;
     private final Map<String, UserInfo> myUserInfoMap = new HashMap<>();
 
     @Inject
@@ -31,6 +32,8 @@ public class UserHolder {
 
                             myUserInfoMap.put(userId2userMap.getKey(), userInfo);
                         }
+
+                        isReady = true;
                     }
 
                     @Override

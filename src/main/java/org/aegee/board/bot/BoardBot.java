@@ -27,7 +27,8 @@ public class BoardBot extends TelegramLongPollingBot {
              ChangeLanguageCommand changeLanguageCommand,
              AboutCommand aboutCommand,
              EventsCommand eventsCommand,
-             UserHolder userHolder) {
+             UserHolder userHolder,
+             Migration migration) {
         myWhoAmICommand = whoAmICommand;
         myHelpCommand = helpCommand;
         myStartCommand = startCommand;
@@ -38,6 +39,8 @@ public class BoardBot extends TelegramLongPollingBot {
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
         System.out.println("bot started");
+
+        migration.execute();
     }
 
     @Override
