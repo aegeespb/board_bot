@@ -99,6 +99,7 @@ public class BoardBot extends TelegramLongPollingBot {
             case "/help":
                 myHelpCommand.execute(chatId);
                 break;
+            case "/faq":
             case "/about":
                 myAboutCommand.execute(chatId);
                 break;
