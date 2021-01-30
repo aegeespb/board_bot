@@ -16,6 +16,7 @@ public class BoardBot extends TelegramLongPollingBot {
     private final AboutCommand myAboutCommand;
     private final UserHolder myUserHolder;
     private final SenderProxy mySenderProxy;
+    private final EventsCommand myEventsCommand;
 
     @Inject
     BoardBot(SenderProxy senderProxy,
@@ -24,6 +25,7 @@ public class BoardBot extends TelegramLongPollingBot {
              StartCommand startCommand,
              ChangeLanguageCommand changeLanguageCommand,
              AboutCommand aboutCommand,
+             EventsCommand eventsCommand,
              UserHolder userHolder) {
         myWhoAmICommand = whoAmICommand;
         myHelpCommand = helpCommand;
@@ -31,6 +33,7 @@ public class BoardBot extends TelegramLongPollingBot {
         myChangeLanguageCommand = changeLanguageCommand;
         myAboutCommand = aboutCommand;
         myUserHolder = userHolder;
+        myEventsCommand = eventsCommand;
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
         System.out.println("bot started");
@@ -57,6 +60,10 @@ public class BoardBot extends TelegramLongPollingBot {
         if (shouldFilterOut(update)) return;
         Long chatId = update.getMessage().getChatId();
         String command = update.getMessage().getText();
+        if (command.startsWith("/event_")) {
+            myEventsCommand.handleEvent(chatId, command);
+            return;
+        }
         switch (command) {
             case "/start":
                 myStartCommand.execute(chatId, update.getMessage().getFrom());
@@ -77,7 +84,10 @@ public class BoardBot extends TelegramLongPollingBot {
                 myAboutCommand.execute(chatId);
                 break;
             case "/version":
-                mySenderProxy.sendMessage(chatId.toString(), "0.0.2");
+                mySenderProxy.sendMessage(chatId.toString(), "0.0.3");
+                break;
+            case "/events":
+                myEventsCommand.execute(chatId);
                 break;
         }
     }
@@ -88,6 +98,8 @@ public class BoardBot extends TelegramLongPollingBot {
         } else if (Language.ENGLISH.toString().equals(callbackQuery.getData()) ||
                 Language.RUSSIAN.toString().equals(callbackQuery.getData())) {
             myChangeLanguageCommand.handleCallback(callbackQuery);
+        } else if (callbackQuery.getData().startsWith("event_")) {
+            myEventsCommand.addReminder(callbackQuery);
         } else {
             myAboutCommand.handleCallback(callbackQuery);
         }
