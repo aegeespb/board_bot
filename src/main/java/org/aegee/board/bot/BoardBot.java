@@ -56,16 +56,31 @@ public class BoardBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (isCallback(update)) handleCallback(update.getCallbackQuery());
-        if (shouldFilterOut(update)) return;
-        Long chatId = update.getMessage().getChatId();
-        String command = update.getMessage().getText();
+        String command = null;
+        Long chatId = null;
+        if (isCallback(update)) {
+            CallbackQuery callbackQuery = update.getCallbackQuery();
+            if (callbackQuery.getData().startsWith("/")) {
+                command = callbackQuery.getData();
+                chatId = callbackQuery.getMessage().getChatId();
+            } else {
+                handleCallback(callbackQuery);
+                return;
+            }
+        }
+        if (chatId == null) {
+            chatId = update.getMessage().getChatId();
+        }
+        if (command == null) {
+            command = update.getMessage().getText();
+        }
         if (command.startsWith("/event_")) {
             myEventsCommand.handleEvent(chatId, command);
             return;
         }
         switch (command) {
             case "/start":
+            case "/menu":
                 myStartCommand.execute(chatId, update.getMessage().getFrom());
                 break;
             case "/whoAmI":
@@ -107,12 +122,5 @@ public class BoardBot extends TelegramLongPollingBot {
 
     private boolean isCallback(Update update) {
         return update.getCallbackQuery() != null;
-    }
-
-    private boolean shouldFilterOut(Update update) {
-        return !update.hasMessage() ||
-                !update.getMessage().isUserMessage() ||
-                !update.getMessage().hasText() ||
-                update.getMessage().getText().isEmpty();
     }
 }
