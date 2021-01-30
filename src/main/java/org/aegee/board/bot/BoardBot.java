@@ -38,10 +38,6 @@ public class BoardBot extends TelegramLongPollingBot {
         senderProxy.registerSender(this);
         mySenderProxy = senderProxy;
         System.out.println("bot started");
-
-        for (UserInfo boardMembersId : myUserHolder.getBoardMembers()) {
-            myStartCommand.execute(boardMembersId.getChatId());
-        }
     }
 
     @Override
