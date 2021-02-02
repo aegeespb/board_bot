@@ -24,6 +24,7 @@ public class AboutCommand {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId.toString());
         sendMessage.enableMarkdown(true);
+        //TODO: add chapter terms
         sendMessage.setText("AEGEE (Association des Etats Généraux des Etudiants de l’Europe или Европейский студенческий форум) —" +
                 " это одна из крупнейших молодежных некоммерческих организаций Европы, зародившаяся во Франции в 1985 году.");
         sendMessage.setReplyMarkup(KeyboardsFactory.getAboutKeyboard());
