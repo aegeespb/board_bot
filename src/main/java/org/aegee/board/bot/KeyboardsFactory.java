@@ -38,12 +38,12 @@ public class KeyboardsFactory {
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
 
         InlineKeyboardButton whatToDoButton = new InlineKeyboardButton();
-        whatToDoButton.setText("Чем занимаются в AEGEE?");
+        whatToDoButton.setText("Зачем вступать в AEGEE?");
         whatToDoButton.setCallbackData(AboutChapters.WHAT_TO_DO.toString());
 
         InlineKeyboardButton whereIsAegee = new InlineKeyboardButton();
-        whereIsAegee.setText("Где можно найти AEGEE?");
-        whereIsAegee.setCallbackData(AboutChapters.WHERE_IS_AEGEE.toString());
+        whereIsAegee.setText("Миссия AEGEE");
+        whereIsAegee.setCallbackData(AboutChapters.AEGEE_MISSION.toString());
 
         InlineKeyboardButton managementInAegee = new InlineKeyboardButton();
         managementInAegee.setText("Как управляется AEGEE?");
