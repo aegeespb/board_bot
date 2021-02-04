@@ -5,6 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -72,40 +73,38 @@ public class KeyboardsFactory {
     }
 
     public static ReplyKeyboard getBackToAbout() {
-        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-
-        InlineKeyboardButton backToAbout = new InlineKeyboardButton();
-        backToAbout.setText("<< Вернуться к оглавлению");
-        backToAbout.setCallbackData(BACK_TO_ABOUT_CALLBACK);
-
-        rowsInline.add(Collections.singletonList(backToAbout));
-        inlineKeyboard.setKeyboard(rowsInline);
-        return inlineKeyboard;
+        return addBackToAbout(Collections.emptyList());
     }
 
-    public static ReplyKeyboard getEuropeanManagementAndBack() {
-        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+    public static ReplyKeyboard europeanEventsAndBack() {
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("Международные мероприятия");
+        button1.setCallbackData(AboutChapters.EUROPEAN_EVENTS.toString());
+
+        return addBackToAbout(Collections.singletonList(button1));
+    }
+
+    public static ReplyKeyboard officialMembershipPlusesAndBack() {
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("Преимущества офицального членства");
+        button1.setCallbackData(AboutChapters.OFFICIAL_MEMBERSHIP_PLUSES.toString());
+
+        return addBackToAbout(Collections.singletonList(button1));
+    }
+
+    public static ReplyKeyboard getWorkingGroupsAndEuropeanManagementAndBack() {
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("Рабочие группы");
+        button1.setCallbackData(AboutChapters.LOCAL_WORKING_GROUPS.toString());
 
         InlineKeyboardButton europeanLevel = new InlineKeyboardButton();
         europeanLevel.setText("Европейский уровень");
         europeanLevel.setCallbackData(AboutChapters.EUROPEAN_MANAGEMENT_LEVEL.toString());
 
-        InlineKeyboardButton backToAbout = new InlineKeyboardButton();
-        backToAbout.setText("<< Вернуться к оглавлению");
-        backToAbout.setCallbackData(BACK_TO_ABOUT_CALLBACK);
-
-        rowsInline.add(Collections.singletonList(europeanLevel));
-        rowsInline.add(Collections.singletonList(backToAbout));
-        inlineKeyboard.setKeyboard(rowsInline);
-        return inlineKeyboard;
+        return addBackToAbout(Collections.singletonList(button1), Collections.singletonList(europeanLevel));
     }
 
     public static ReplyKeyboard getTypesCostSUAndBack() {
-        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-
         InlineKeyboardButton typesSummerUniversity = new InlineKeyboardButton();
         typesSummerUniversity.setText("Какие бывают типы SU?");
         typesSummerUniversity.setCallbackData(AboutChapters.TYPES_SUMMER_UNIVERSITY.toString());
@@ -114,12 +113,19 @@ public class KeyboardsFactory {
         costSummerUniversity.setText("Сколько это стоит?");
         costSummerUniversity.setCallbackData(AboutChapters.COST_SUMMER_UNIVERSITY.toString());
 
+        return addBackToAbout(Collections.singletonList(typesSummerUniversity),
+                Collections.singletonList(costSummerUniversity));
+    }
+
+    @SafeVarargs
+    private static ReplyKeyboard addBackToAbout(List<InlineKeyboardButton>... buttons) {
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
+
         InlineKeyboardButton backToAbout = new InlineKeyboardButton();
         backToAbout.setText("<< Вернуться к оглавлению");
         backToAbout.setCallbackData(BACK_TO_ABOUT_CALLBACK);
 
-        rowsInline.add(Collections.singletonList(typesSummerUniversity));
-        rowsInline.add(Collections.singletonList(costSummerUniversity));
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>(Arrays.asList(buttons));
         rowsInline.add(Collections.singletonList(backToAbout));
         inlineKeyboard.setKeyboard(rowsInline);
         return inlineKeyboard;
