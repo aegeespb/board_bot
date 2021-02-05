@@ -113,7 +113,8 @@ public class VkHandler {
                 SendMessage sendMessage = new SendMessage();
                 sendMessage.setChatId(tgUserToNotify.getChatId().toString());
                 sendMessage.enableMarkdown(true);
-                String msg = "New message from [" + execute.get(0).getFirstName() + " " + execute.get(0).getLastName() + "](" + "https://vk.com/id" + vkUserId + ") received: " + message;
+                String msg = "New message from [" + execute.get(0).getFirstName() + " " + execute.get(0).getLastName() + "](" + "https://vk.com/id" + vkUserId + ") received: " + message +
+                        " \n[Reply...](https://vk.com/gim" + getVkGroupId() + ")";
                 sendMessage.setText(msg);
                 mySenderProxy.execute(sendMessage);
             }
