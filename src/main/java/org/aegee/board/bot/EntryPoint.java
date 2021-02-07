@@ -7,14 +7,19 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.util.Timer;
+
 public class EntryPoint {
   private static Injector myInjector;
   private final BoardBot myRouter;
 
   @Inject
   public EntryPoint(BoardBot router,
-                    VkHandler vkHandler) {
+                    VkHandler vkHandler,
+                    SubscribersSupporter subscribersSupporter) {
     myRouter = router;
+    Timer timer = new Timer();
+    timer.schedule(subscribersSupporter, 1000 * 30, 1000 * 60 * 60);
   }
 
   public static void main(String[] args) {

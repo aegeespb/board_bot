@@ -2,9 +2,9 @@ package org.aegee.board.bot.commands;
 
 import com.google.inject.Inject;
 import org.aegee.board.bot.SenderProxy;
-import org.aegee.board.bot.UserHolder;
 import org.aegee.board.bot.events.*;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -17,31 +17,21 @@ import java.util.regex.Pattern;
 
 public class EventsCommand {
     private final SenderProxy mySenderProxy;
-    private final UserHolder myUserHolder;
-    private static final Map<Integer, Event> events = new HashMap<>();
+    private final EventsHolder myEventsHolder;
     private final DateFormat df = new SimpleDateFormat("dd.MM");
-
-    static {
-        events.put(new Event1().getId(), new Event1());
-        events.put(new Event2().getId(), new Event2());
-        events.put(new Event3().getId(), new Event3());
-        events.put(new Event4().getId(), new Event4());
-        events.put(new Event5().getId(), new Event5());
-    }
 
     @Inject
     public EventsCommand(SenderProxy sender,
-                         UserHolder userHolder) {
+                         EventsHolder eventsHolder) {
         mySenderProxy = sender;
-        myUserHolder = userHolder;
+        myEventsHolder = eventsHolder;
     }
 
     public void execute(Long chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId.toString());
         StringBuilder sb = new StringBuilder();
-        for (Event event : events.values()) {
-            if (event.getStartDate().before(Calendar.getInstance().getTime())) continue;
+        for (Event event : myEventsHolder.getUpcomingEvents()) {
             sb.append(df.format(event.getStartDate()));
             sb.append(" - ");
             if (event.getFinishDate() != null) {
@@ -65,36 +55,92 @@ public class EventsCommand {
         if (eventIdMatcher.matches()) {
             String idAsString = eventIdMatcher.group(1);
             Integer id = Integer.parseInt(idAsString);
-            Event event = events.get(id);
+            Event event = myEventsHolder.getById(id);
             if (event != null) {
                 sendMessage.setText(event.getLongDescription());
-                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-
-                InlineKeyboardButton subscribe = new InlineKeyboardButton();
-                subscribe.setText("Remind");
-                subscribe.setCallbackData("event_" + id + "_remind");
-
-                InlineKeyboardButton registration = new InlineKeyboardButton();
-                registration.setText("Registration");
-                registration.setUrl(event.getRegistrationLink());
-
-                List<InlineKeyboardButton> buttons = new ArrayList<>();
-                buttons.add(registration);
-                buttons.add(subscribe);
-                rowsInline.add(buttons);
-                inlineKeyboard.setKeyboard(rowsInline);
-                sendMessage.setReplyMarkup(inlineKeyboard);
+                sendMessage.setReplyMarkup(getInlineKeyboard(event, chatId));
             }
         }
 
         mySenderProxy.execute(sendMessage);
     }
 
+    private InlineKeyboardMarkup getInlineKeyboard(Event event, Long chatId) {
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        InlineKeyboardButton subscribe = new InlineKeyboardButton();
+        if (!event.getSubscribers().contains(chatId)) {
+            subscribe.setText("Remind");
+            subscribe.setCallbackData("event_" + event.getId() + "_remind");
+        } else {
+            subscribe.setText("Remove reminder");
+            subscribe.setCallbackData("event_" + event.getId() + "_unremind");
+        }
+        InlineKeyboardButton registration = new InlineKeyboardButton();
+        registration.setText("Registration");
+        registration.setUrl(event.getRegistrationLink());
+
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
+        buttons.add(registration);
+        buttons.add(subscribe);
+        rowsInline.add(buttons);
+        inlineKeyboard.setKeyboard(rowsInline);
+
+        return inlineKeyboard;
+    }
+
+    private final Pattern remindPattern = Pattern.compile("event_(.*)_remind");
+    private final Pattern unRemindPattern = Pattern.compile("event_(.*)_unremind");
     public void addReminder(CallbackQuery callbackQuery) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(callbackQuery.getMessage().getChatId().toString());
-        sendMessage.setText("This functionality will be implemented soon ;)");
-        mySenderProxy.execute(sendMessage);
+        String data = callbackQuery.getData();
+        Matcher reminderMatcher = remindPattern.matcher(data);
+        Matcher unReminderMatcher = unRemindPattern.matcher(data);
+
+        if (reminderMatcher.matches()) {
+            Integer eventId = Integer.parseInt(reminderMatcher.group(1));
+            Event event = myEventsHolder.getById(eventId);
+
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(callbackQuery.getMessage().getChatId().toString());
+            if (!event.getSubscribers().contains(callbackQuery.getMessage().getChatId())) {
+                event.addSubscriber(callbackQuery.getMessage().getChatId());
+                myEventsHolder.updateSubscribers(event);
+                sendMessage.setText("Reminder for event '" + event.getShortDescription() + "' added");
+            } else {
+                sendMessage.setText("Reminder already exists");
+            }
+
+            mySenderProxy.execute(sendMessage);
+            updateInlineKeyboard(callbackQuery, event);
+        } else if (unReminderMatcher.matches()){
+            Integer eventId = Integer.parseInt(unReminderMatcher.group(1));
+            Event event = myEventsHolder.getById(eventId);
+
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(callbackQuery.getMessage().getChatId().toString());
+            if (event.getSubscribers().contains(callbackQuery.getMessage().getChatId())) {
+                event.removeSubscriber(callbackQuery.getMessage().getChatId());
+                myEventsHolder.updateSubscribers(event);
+                sendMessage.setText("Reminder for event '" + event.getShortDescription() + "' removed");
+            } else {
+                sendMessage.setText("Reminder not exists");
+            }
+
+            mySenderProxy.execute(sendMessage);
+            updateInlineKeyboard(callbackQuery, event);
+        } else {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(callbackQuery.getMessage().getChatId().toString());
+            sendMessage.setText("Reminder not changed - received command " + data);
+            mySenderProxy.execute(sendMessage);
+        }
+    }
+
+    private void updateInlineKeyboard(CallbackQuery callbackQuery, Event event) {
+        EditMessageReplyMarkup editMarkup = new EditMessageReplyMarkup();
+        editMarkup.setChatId(callbackQuery.getMessage().getChatId().toString());
+        editMarkup.setMessageId(callbackQuery.getMessage().getMessageId());
+        editMarkup.setReplyMarkup(getInlineKeyboard(event, callbackQuery.getMessage().getChatId()));
+        mySenderProxy.execute(editMarkup);
     }
 }

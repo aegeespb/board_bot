@@ -1,5 +1,7 @@
 package org.aegee.board.bot;
 
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -129,6 +131,15 @@ public class KeyboardsFactory {
         rowsInline.add(Collections.singletonList(backToAbout));
         inlineKeyboard.setKeyboard(rowsInline);
         return inlineKeyboard;
+    }
+
+    public static EditMessageReplyMarkup hideKeyboardMarkup(CallbackQuery callbackQuery) {
+        EditMessageReplyMarkup editMarkup = new EditMessageReplyMarkup();
+        editMarkup.setChatId(callbackQuery.getMessage().getChatId().toString());
+        editMarkup.setMessageId(callbackQuery.getMessage().getMessageId());
+        editMarkup.setReplyMarkup(null);
+
+        return editMarkup;
     }
 }
 

@@ -34,8 +34,11 @@ public class Settings {
     }
 
     public void update(String key, Object value) {
+        update(getDatabaseReference(key), key, value);
+    }
+
+    public void update(DatabaseReference ref, String key, Object value) {
         try {
-            DatabaseReference ref = firebaseDatabase.getReference(key);
             final CountDownLatch latch = new CountDownLatch(1);
             ref.setValue(value, (databaseError, databaseReference) -> {
                 if (databaseError != null) {
