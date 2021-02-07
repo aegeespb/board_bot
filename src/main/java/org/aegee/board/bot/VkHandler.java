@@ -16,21 +16,26 @@ import com.vk.api.sdk.objects.wall.Wallpost;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class VkHandler {
     private final SenderProxy mySenderProxy;
     private final UserHolder myUserHolder;
     private final VkApiClient vkApiClient;
+    private final GroupActor myGroupActor;
+
     @Inject
     public VkHandler(SenderProxy senderProxy,
                      UserHolder userHolder) throws ClientException, ApiException {
         mySenderProxy = senderProxy;
         myUserHolder = userHolder;
-        GroupActor groupActor = createGroupActor();
+        myGroupActor = createGroupActor();
         HttpTransportClient httpClient = HttpTransportClient.getInstance();
         vkApiClient = new VkApiClient(httpClient);
-        vkApiClient.groups().setLongPollSettings(groupActor, groupActor.getGroupId()).enabled(true)
+        vkApiClient.groups().setLongPollSettings(myGroupActor, myGroupActor.getGroupId()).enabled(true)
                 .groupJoin(true)
                 .groupLeave(true)
                 .messageNew(true)
@@ -38,14 +43,20 @@ public class VkHandler {
                 .apiVersion("5.126")
                 .execute();
 
-        new Thread(() -> {
+        Timer timer = new Timer();
+        timer.schedule(new InfiniteVkHandler(), TimeUnit.MINUTES.toMillis(1), TimeUnit.MINUTES.toMillis(15));
+    }
+
+    private class InfiniteVkHandler extends TimerTask {
+        @Override
+        public void run() {
             try {
-                CallbackApiLongPollHandler handler = new CallbackApiLongPollHandler(vkApiClient, groupActor);
+                CallbackApiLongPollHandler handler = new CallbackApiLongPollHandler(vkApiClient, myGroupActor);
                 handler.run();
-            } catch(ApiException | ClientException v) {
+            } catch (ApiException | ClientException v) {
                 v.printStackTrace();
             }
-        }).start();
+        }
     }
 
     public class CallbackApiLongPollHandler extends CallbackApiLongPoll {
